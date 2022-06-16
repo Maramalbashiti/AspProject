@@ -1,0 +1,217 @@
+﻿@page
+@model AspProject.Pages.Product.IndexModel
+@{
+  
+}
+<link href="~/lib/datatables/css/jquery.dataTables.min.css" rel="stylesheet"/>
+<!-- Button trigger modal -->
+<button onclick="AddProduct();" type="button" class="btn btn-primary px-5 mb-4" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+Add Product
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+       <form method="post" enctype="multipart/form-data" id="ProductForm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+           <div asp-validation-summary="All" class="text-danger"></div>
+             <div class="form-floating needs-validation mb-3" id="hiddenId">
+         <input  class="form-control"  placeholder="Enter Product Id"  name="Id" id="ID" readonly>
+         <label >Product ID</label>
+          
+       </div>
+       <div class="form-floating mb-3">
+         <input  class="form-control "  placeholder="Enter Product Name"  name="ProductName" id="productname" required>
+         <label  >Product Name</label>
+           
+       </div>
+       <div class="form-floating mb-3">
+         <input   class="form-control needs-validation" name="Price" placeholder="Price" id="price" required>
+         <label   >Price</label>
+         
+       </div>
+       <div class="form-floating mb-3">
+         <input class="form-control needs-validation" name="Quantity" placeholder="Quantity" id="quentity" required>
+         <label>Quantity</label>
+          
+       </div>
+        <div class="form-floating mb-3">
+         <input   class="form-control needs-validation" name="Category" placeholder="Category" id="category" required>
+         <label>Category</label>
+       
+       </div>
+     
+      </div>
+      <div class="modal-footer">
+        <button id ="btnSave" type="submit"  class="btn btn-success">Add</button>
+        <button id ="btnUpdate" type="submit" class="btn btn-warning" >Update</button>
+        <button type="Reset" value="Reset" class="btn btn-secondary">Reset</button>
+
+      </div>
+    </div>
+    </form>
+  </div>
+</div>
+
+<div class="row">
+<div class="col">
+    <table id="example" class="display table table-bordered table-striped table-light" width="100%"></table>
+</div>
+</div>
+
+@section Scripts{
+<script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+
+
+<script>
+
+  
+$(document).ready(function() {
+    $('#example').DataTable( {
+      data:@Model.dataasJson,
+     
+     
+        columns:[
+           {data:"Id",title:"ID"},
+           {data:"ProductName",title:"ProductName"},
+           {data:"Price",title:"Price"},
+           {data:"Quantity",title:"Quantity"},
+           {data:"Category",title:"Category"},
+           {data:null,title:"Oparation",
+               render:function(data,type,row)
+               {
+                   return` <div>
+                   <a onclick="DeleteProduct(`+row.Id+`)"class="btn btn-danger"> Delete </a> |
+                   <a  onclick="Update(${row.Id},'${row.ProductName}',${row.Price},${row.Quantity},'${row.Category}')"class="btn btn-info">Edit</a>
+                   </div>`
+               }
+           },
+
+       ],
+       pagingType:"full_numbers",
+       stateSave:true,
+       language:{url:'/lib/datatables/arabic.json'}
+    });
+      } );
+
+    function DeleteProduct(ProductId){
+    if(confirm("Are You Sure?")){
+        $.ajax(
+            {
+                type:"Get",
+                url:`/Products/Products/Delete?Id=${ProductId}`,
+                dataType:"json",
+                success:function(){
+                    var table=$('#example').DataTable();
+                    table.draw();
+                   window.location.reload();
+                    
+                },
+                error:function(){alert('Error!');}
+            }
+        );
+    }}
+
+
+    //Add
+      $("#ProductForm").on("submit",function(e){e.preventDefault();})
+       $("#btnSave").on("click", function AddProducttt(){
+      var formData = new FormData($("#ProductForm").get(0));  
+        $.ajax({
+              type: "Post",
+              url: "/Products/Products/Add",
+              data: formData,
+              processData: false, 
+              contentType: false,
+              dataType:"json",
+             error: function() {
+                alert('Error!');
+           
+               },
+              success: function(data) {
+
+                  $(".btn-close").click();
+                    var table=$('#example').DataTable();
+                    table.draw();
+            
+
+                    window.location.reload();
+               } 
+           });
+     
+    });
+    function Update(Id,ProductName,Price,Quantity,Category){
+        console.log(Id+" "+ProductName+" "+Price+" "+Quantity+" "+Category);
+        myModal.show();
+          document.getElementById("btnUpdate").hidden = false;
+            document.getElementById("btnSave").hidden = true; 
+            $("#ID").val(Id);
+            $("#productname").val(ProductName);
+            $("#price").val(Price); 
+            $("#quentity").val(Quantity);
+            $("#category").val(Category);
+           
+           
+    }
+  
+
+        document.getElementById("btnUpdate").addEventListener('click', function (e) {
+            var data = new FormData($("#ProductForm").get(0));
+           
+            $.ajax({
+                method: "POST",
+                url: "/Products/Products/Edit",
+                data: data,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                     $(".btn-close").click();
+                    var table=$('#example').DataTable();
+                    table.draw();
+                    window.location.reload();
+                },
+                error: function () { alert('Error!'); }
+            });
+        });
+
+
+</script>
+
+<script>
+     var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'), {
+            keyboard: true,
+
+        })
+         var elm= document.getElementById('floatingInput');
+
+        function AddProduct() {
+          
+          
+            document.getElementById('btnUpdate').hidden = true;
+            document.getElementById('btnSave').hidden = false;
+          
+            document.getElementById('ID').value = null;
+            document.getElementById('price').value = null;
+            document.getElementById('productname').value = '';
+            document.getElementById('quentity').value = null;
+            document.getElementById('category').value = '';  
+            myModal.show()
+            var elem = document.getElementById("hiddenId");
+            elem.parentNode.removeChild(elem);
+           
+         
+        }
+
+
+
+</script>
+
+
+
+
+}

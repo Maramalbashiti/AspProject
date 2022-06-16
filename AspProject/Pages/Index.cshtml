@@ -1,0 +1,45 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<link href="~/lib/datatables/css/jquery.dataTables.min.css" rel="stylesheet"/>
+
+<div class="row">
+<div class="col">
+    <table id="example" class="display table table-bordered table-striped table-light" width="100%"></table>
+</div>
+</div>
+
+@section Scripts{
+<script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+
+
+<script>
+
+$(document).ready(function() {
+    $('#example').DataTable( {
+      
+        data:@Model.dataasJson,
+        columns:[
+           {data:"Id",title:"ID"},
+           {data:"ProductName",title:"ProductName"},
+           {data:"Price",title:"Price"},
+           {data:"Quantity",title:"Quantity"},
+           {data:"Category",title:"Category"},
+         
+
+       ],
+       pagingType:"full_numbers",
+       stateSave:true
+       //language:{url:'/lib/datatables/arabic.json'}
+    });
+      } );
+   
+
+
+</script>
+
+
+}
